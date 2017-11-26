@@ -46,7 +46,7 @@ makeVideoalbum output, args... {
 	
 	logExec("sox", *[seq(1,i-1) | push(`audio$_.wav`)], "audio.wav")
 	
-	logExec("ffmpeg", "-f", "concat", "-i", "frames.txt", "-i", "audio.wav", "-c:v", "libx264", "-c:a", "aac", "-b:a", "192k", output)
+	logExec("ffmpeg", "-f", "concat", "-i", "frames.txt", "-i", "audio.wav", "-c:v", "libx264", "-c:a", "aac", "-b:a", "192k", "-r", "1", output)
 	seq(1, i-1) | for i do
 		rm(`frame$i.svg`)
 		rm(`frame$i.png`)
