@@ -1,0 +1,28 @@
+#!/usr/bin/env röda
+
+{
+	makeVideoalbum := require("videoalbum").makeVideoalbum
+}
+
+usage p {
+	p "Usage: videoalbum <output> { <name> <audio> }\n"
+}
+
+main args... {
+	if [ #args = 0 ] do
+		usage(errprint)
+		return
+	done
+	output := args[0]
+	shift(args)
+	if [ #args = 0 or #args % 2 != 0 ] do
+		usage(errprint)
+		return
+	done
+	if [ output in ["-h", "-help", "--help"] ] do
+		usage(push)
+		return
+	done
+	
+	makeVideoalbum(output, *args)
+}

@@ -1,0 +1,6 @@
+# name = videoalbum
+# version = 1.0.0
+# dependencies[]:
+fileutil
+# executables[]:
+videoalbum.röd

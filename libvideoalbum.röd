@@ -1,0 +1,57 @@
+{
+	fileutil := require("fileutil")
+	logExec := fileutil.logExec
+	logBufferedExec := fileutil.logBufferedExec
+	rm := fileutil.rm
+}
+
+post_load: {
+	export(makeVideoalbum)
+}
+
+makeVideoalbum output, args... {
+	i := 1
+	duration_mod := 0.0
+	args | for line, audio do
+		print(`<svg xmlns="http://www.w3.org/2000/svg"
+     width="100%" height="100%" viewBox="0 0 1600 900">
+	<style>
+		/* <![CDATA[ */
+		tspan {
+			fill: white;
+			text-align: center;
+			font-family: sans-serif;
+			font-size: 30px;
+		}
+		rect {
+			fill: black;
+		}
+		/* ]]> */
+	</style>
+	<rect width="100%" height="100%" />
+	<text y="50%" baseline-anchor="middle">
+		<tspan x="100" y="800">$line</tspan>
+	</text>
+</svg>`) | writeStrings(`frame$i.svg`)
+		logExec("convert", `frame$i.svg`, `frame$i.png`)
+		duration := {}() | logBufferedExec("soxi", "-D", audio) | parseFloating(_) + duration_mod
+		duration_mod = duration%1
+		print(`file 'frame$i.png'`)
+		print("duration ", duration//1)
+		
+		logExec("sox", audio, "-b", "16", `audio$i.wav`, "channels", "1", "rate", "44100")
+		
+		i ++
+	done | writeStrings(`frames.txt`)
+	
+	logExec("sox", *[seq(1,i-1) | push(`audio$_.wav`)], "audio.wav")
+	
+	logExec("ffmpeg", "-f", "concat", "-i", "frames.txt", "-i", "audio.wav", "-c:v", "libx264", "-c:a", "aac", "-b:a", "192k", output)
+	seq(1, i-1) | for i do
+		rm(`frame$i.svg`)
+		rm(`frame$i.png`)
+		rm(`audio$i.wav`)
+	done
+	rm("frames.txt")
+	rm("audio.wav")
+}
